@@ -57,3 +57,36 @@ pf(Fcal1,1,19,lower.tail = F)
 Fcal2<-CMTraj/CMEaj
 qf(0.05,5,19,lower.tail = F)
 pf(Fcal2,5,19,lower.tail = F)
+
+#Pruebas de Comparación # Empieza 11.2
+beta<-scexy/anvax[3,2]
+
+ybar<-tapply(caso$ganancia,caso$trat,mean)
+xbar<-tapply(caso$inicial,caso$trat,mean)
+ybarajus<-ybar-beta*(xbar-mean(caso$inicial))
+
+#Prueba DLS
+abs(ybarajus[1]-ybarajus[2])
+DLS<-qt(0.05/2,GLEAj,lower.tail=F)*sqrt(CMEaj*(2/5+(xbar[1]-xbar[2])^2/anvax[3,2]))
+
+#Prueba de Tukey
+dif<-c()
+ALStu<-c()
+combi<-t(combn(6,2))
+AES<-qtukey(p = 0.05,nmeans = 6,df = GLEAj,lower.tail = F)
+for(i in 1:15){
+  dif[i]<-abs(ybarajus[combi[i,1]]-ybarajus[combi[i,2]])
+  ALStu[i]<-AES*sqrt(CMEaj/2*(2/5+(xbar[combi[i,1]]-xbar[combi[i,2]])^2/anvax[3,2]))
+  
+}
+dif>ALStu
+
+sort(ybarajus)
+
+#Con R
+modelo <- lm(ganancia ~ trat + Bloque + inicial, data = caso)
+ancova <- car::Anova(modelo, type = 3)
+
+shapiro.test(modelo$residuals)
+bartlett.test(modelo$residuals,g = caso$trat)
+
